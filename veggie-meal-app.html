@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#2d7a5a">
+<title>채소볶음 건강식단</title>
+<style>
+:root {
+  --green:#2d7a5a; --green-light:#e8f5ee; --green-dark:#1e5c42;
+  --text:#1a1a1a; --sub:#5a5a5a; --hint:#999;
+  --bg:#f7f5f0; --card:#fff; --border:rgba(0,0,0,0.08);
+  --r:16px; --rs:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 20px 12px;position:sticky;top:0;z-index:100}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.app-title{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.app-sub{font-size:11px;color:var(--green);font-weight:600;margin-top:1px}
+.hbtn{background:var(--green-light);border:none;color:var(--green);font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer}
+.tabs{display:flex;gap:4px;background:var(--bg);padding:2px;border-radius:12px}
+.tab{flex:1;text-align:center;font-size:13px;font-weight:600;padding:8px 0;border-radius:10px;border:none;background:none;color:var(--hint);cursor:pointer;transition:all .2s}
+.tab.on{background:var(--card);color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.main{padding:16px 16px 100px;max-width:480px;margin:0 auto}
+.slabel{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px}
+.dcard{background:var(--card);border-radius:var(--r);margin-bottom:10px;overflow:hidden;border:1px solid var(--border)}
+.dhead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
+.dname{font-size:13px;font-weight:700;color:var(--sub)}
+.sbtn{background:var(--bg);border:none;color:var(--hint);font-size:12px;padding:4px 10px;border-radius:20px;cursor:pointer}
+.rslot{padding:0 16px 0;display:flex;align-items:center;gap:12px;cursor:pointer;active:background:#f0f0f0}
+.ricon{width:44px;height:44px;border-radius:12px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.rinfo{flex:1;min-width:0}
+.rname{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtags{display:flex;gap:4px;flex-wrap:wrap}
+.rtag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--green-light);color:var(--green)}
+.nutrow{display:flex;gap:5px;padding:10px 16px 8px;flex-wrap:wrap}
+.nb{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px}
+.nf{background:#e8f5ee;color:#2d7a5a} .ni{background:#ffeee8;color:#c0522a}
+.nc{background:#e8f0fe;color:#2a5fc0} .np{background:#eeeffe;color:#5048b0}
+.no{background:#fff8e1;color:#b07a00} .nv{background:#f3e8ff;color:#7048b0}
+.nd{background:#f0f0f0;color:#666}
+.tip{font-size:11px;color:var(--hint);padding:6px 10px 14px 16px}
+.arrow{color:#ccc;font-size:20px;padding-right:8px;flex-shrink:0}
+/* shopping */
+.shead{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border)}
+.scnt{font-size:22px;font-weight:700;color:var(--green)}
+.scntl{font-size:12px;color:var(--hint);margin-top:1px}
+.pbar{height:4px;background:var(--bg);border-radius:4px;margin-top:8px;overflow:hidden}
+.pfill{height:4px;background:var(--green);border-radius:4px;transition:width .3s}
+.scat{background:var(--card);border-radius:var(--r);margin-bottom:10px;overflow:hidden;border:1px solid var(--border)}
+.catheader{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.catname{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.catcnt{font-size:11px;color:var(--hint)}
+.sitem{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.sitem:last-child{border-bottom:none}
+.sitem.done .iname{text-decoration:line-through;color:var(--hint)}
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.sitem.done .chk{background:var(--green);border-color:var(--green)}
+.ckico{display:none;color:#fff;font-size:12px;font-weight:700}
+.sitem.done .ckico{display:block}
+.iname{font-size:14px;color:var(--text);flex:1}
+.iqty{font-size:12px;color:var(--hint)}
+/* bottom bar */
+.bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--border);padding:12px 20px;padding-bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:10px;z-index:99}
+.bbtn{flex:1;padding:14px;border-radius:var(--rs);border:none;font-size:15px;font-weight:700;cursor:pointer}
+.bbtn.pri{background:var(--green);color:#fff}
+.bbtn.sec{background:var(--bg);color:var(--sub)}
+.empty{text-align:center;padding:40px 20px;color:var(--hint);font-size:14px}
+/* modal */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
+.moverlay.open{display:flex}
+.msheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding-bottom:max(24px,env(safe-area-inset-bottom));animation:sup .28s cubic-bezier(.32,.72,0,1)}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:12px auto 0}
+.mhdr{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.memoji{font-size:36px;margin-bottom:4px}
+.mtitle{font-size:20px;font-weight:700;letter-spacing:-0.3px;margin-bottom:6px}
+.mclose{width:32px;height:32px;border-radius:50%;background:var(--bg);border:none;font-size:16px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.msec{padding:0 20px 16px}
+.msectitle{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.mdiv{height:1px;background:var(--border);margin:4px 20px 16px}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.iitem{background:var(--bg);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+.iiname{font-size:13px;font-weight:600;color:var(--text)}
+.iiqty{font-size:12px;color:var(--hint)}
+.steplist{display:flex;flex-direction:column;gap:10px}
+.stepitem{display:flex;gap:12px;align-items:flex-start}
+.stepnum{width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.steptxt{font-size:14px;color:var(--text);line-height:1.6;flex:1}
+.tipbox{background:var(--green-light);border-radius:12px;padding:12px 14px;display:flex;gap:8px;align-items:flex-start}
+.tiptxt{font-size:13px;color:var(--green);line-height:1.55}
+.nutrow2{display:flex;flex-wrap:wrap;gap:6px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="app-title">채소볶음 건강식단</div>
+      <div class="app-sub">다음 주 저녁 · 2인분</div>
+    </div>
+    <button class="hbtn" onclick="generateWeek()">새 식단 뽑기</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" id="tab-meal" onclick="showTab('meal')">주간 식단</button>
+    <button class="tab" id="tab-shop" onclick="showTab('shop')">장보기 리스트</button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="view-meal"></div>
+  <div id="view-shop" style="display:none"></div>
+</div>
+
+<div class="moverlay" id="modal" onclick="overlayClose(event)">
+  <div class="msheet" id="msheet">
+    <div class="mhandle"></div>
+    <div class="mhdr">
+      <div style="flex:1">
+        <div class="memoji" id="m-emoji"></div>
+        <div class="mtitle" id="m-title"></div>
+        <div class="nutrow2" id="m-tags" style="margin-bottom:12px"></div>
+      </div>
+      <button class="mclose" id="mcloseBtn">✕</button>
+    </div>
+    <div class="msec">
+      <div class="msectitle">영양 포인트</div>
+      <div class="nutrow2" id="m-nut"></div>
+    </div>
+    <div class="mdiv"></div>
+    <div class="msec">
+      <div class="msectitle">재료 (2인분)</div>
+      <div class="igrid" id="m-ing"></div>
+    </div>
+    <div class="mdiv"></div>
+    <div class="msec">
+      <div class="msectitle">조리 순서</div>
+      <div class="steplist" id="m-steps"></div>
+    </div>
+    <div class="mdiv"></div>
+    <div class="msec">
+      <div class="tipbox">
+        <span style="font-size:16px;flex-shrink:0">💡</span>
+        <span class="tiptxt" id="m-tip"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bbar" id="bbar">
+  <button class="bbtn sec" onclick="generateWeek()">식단 다시 뽑기</button>
+  <button class="bbtn pri" onclick="showTab('shop')">장보기 리스트 →</button>
+</div>
+
+<script>
+var RECIPES = [
+{id:1,name:"버섯 버터볶음",ingredients:["새송이버섯 150g","표고버섯 100g","버터 1T","올리브유 1T","마늘 2쪽","소금 약간"],tags:["채소볶음","버섯"],nutrition:["비타민D","식이섬유"],tip:"센 불에 빠르게 볶아야 수분이 안 생김"},
+{id:2,name:"브로콜리 마늘볶음",ingredients:["브로콜리 200g","마늘 3쪽","올리브유 2T","소금 약간","통깨 약간"],tags:["채소볶음","브로콜리"],nutrition:["엽산","비타민C","식이섬유"],tip:"살짝 데친 후 볶으면 색이 선명"},
+{id:3,name:"시금치 참기름무침",ingredients:["시금치 200g","참기름 1T","간장 0.5T","마늘 1쪽","통깨 약간"],tags:["무침","시금치"],nutrition:["엽산","철분","비타민K"],tip:"살짝만 데쳐야 영양소 파괴 최소화"},
+{id:4,name:"두부 간장볶음",ingredients:["두부 1모","간장 1T","참기름 1T","올리브유 1T","마늘 2쪽","대파 약간"],tags:["채소볶음","두부"],nutrition:["단백질","칼슘"],tip:"키친타월로 물기 제거 후 볶아야 바삭"},
+{id:5,name:"애호박 달걀볶음",ingredients:["애호박 1개","달걀 2개","올리브유 1T","소금 약간","대파 약간"],tags:["채소볶음","애호박"],nutrition:["단백질","비타민A","엽산"],tip:"달걀은 마지막에 넣어 반숙으로 마무리"},
+{id:6,name:"파프리카 새우볶음",ingredients:["빨강파프리카 1개","노랑파프리카 1개","새우 150g","올리브유 1T","마늘 2쪽","소금 약간"],tags:["채소볶음","파프리카"],nutrition:["비타민C","단백질","칼슘"],tip:"고온에서 빠르게 볶아 아삭함 유지"},
+{id:7,name:"당근 들깨볶음",ingredients:["당근 1개","들깨가루 1T","올리브유 1T","소금 약간","마늘 1쪽"],tags:["채소볶음","당근"],nutrition:["베타카로틴","비타민A","오메가3"],tip:"기름에 볶아야 베타카로틴 흡수율 상승"},
+{id:8,name:"청경채 굴소스볶음",ingredients:["청경채 200g","마늘 3쪽","굴소스 1T","올리브유 1T","참기름 약간"],tags:["채소볶음","청경채"],nutrition:["칼슘","엽산","비타민C"],tip:"줄기부터 볶다가 잎은 마지막에"},
+{id:9,name:"양배추 된장볶음",ingredients:["양배추 1/4개","된장 1T","마늘 2쪽","올리브유 1T","참기름 약간"],tags:["채소볶음","양배추"],nutrition:["비타민C","비타민K","식이섬유"],tip:"된장은 마지막에 넣어야 타지 않음"},
+{id:10,name:"가지 간장볶음",ingredients:["가지 2개","간장 1T","마늘 2쪽","올리브유 2T","참기름 1T","통깨 약간"],tags:["채소볶음","가지"],nutrition:["안토시아닌","식이섬유","칼륨"],tip:"소금에 절였다 볶으면 기름 흡수 줄어듦"},
+{id:11,name:"닭안심 브로콜리볶음",ingredients:["닭안심 200g","브로콜리 150g","마늘 2쪽","올리브유 1T","소금 약간","후추 약간"],tags:["채소볶음","닭안심"],nutrition:["단백질","엽산","비타민C"],tip:"닭안심은 얇게 썰어야 빨리 익음"},
+{id:12,name:"팽이버섯 달걀볶음",ingredients:["팽이버섯 1봉","달걀 2개","대파 1대","올리브유 1T","간장 0.5T","참기름 약간"],tags:["채소볶음","버섯"],nutrition:["단백질","비타민D","식이섬유"],tip:"뿌리 자르고 손으로 뜯어 볶기"},
+{id:13,name:"시금치 두부볶음",ingredients:["시금치 150g","두부 반모","마늘 2쪽","올리브유 1T","간장 0.5T","참기름 약간"],tags:["채소볶음","시금치"],nutrition:["엽산","철분","단백질","칼슘"],tip:"철분+단백질 최강 조합"},
+{id:14,name:"소불고기 버섯볶음",ingredients:["소불고기용 200g","새송이버섯 100g","양파 반개","간장 1T","참기름 1T","마늘 2쪽","설탕 약간"],tags:["채소볶음","소고기"],nutrition:["철분","단백질","아연"],tip:"냉동 상태에서 살짝 녹여 얇게 썰기"},
+{id:15,name:"애호박 두부조림",ingredients:["애호박 1개","두부 1모","간장 2T","마늘 2쪽","참기름 1T","통깨 약간"],tags:["조림","두부"],nutrition:["단백질","칼슘","비타민A"],tip:"약불에서 천천히 조려야 간이 잘 배임"},
+{id:16,name:"단호박 버터찜",ingredients:["단호박 1/4개","버터 1T","소금 약간","꿀 약간"],tags:["찜","단호박"],nutrition:["베타카로틴","비타민A","식이섬유"],tip:"전자레인지 5분. 씨 제거 후 랩 씌워서"},
+{id:17,name:"콩나물 무침",ingredients:["콩나물 200g","참기름 1T","간장 0.5T","마늘 1쪽","통깨 약간","대파 약간"],tags:["무침","콩나물"],nutrition:["비타민C","단백질","식이섬유"],tip:"뚜껑 열지 않고 삶아야 비린내 없음"},
+{id:18,name:"오이 초무침",ingredients:["오이 1개","식초 1T","설탕 0.5T","소금 약간","참기름 약간","통깨 약간"],tags:["무침","오이"],nutrition:["비타민C","수분","칼륨"],tip:"소금에 절였다 물기 짜면 아삭함 유지"},
+{id:19,name:"연근 조림",ingredients:["연근 200g","간장 2T","설탕 1T","식초 0.5T","참기름 1T","통깨 약간"],tags:["조림","연근"],nutrition:["식이섬유","비타민C","철분"],tip:"식초 넣은 물에 담가두면 갈변 방지"},
+{id:20,name:"닭안심 시금치볶음",ingredients:["닭안심 200g","시금치 150g","마늘 2쪽","올리브유 1T","레몬즙 약간","소금 약간"],tags:["채소볶음","닭안심"],nutrition:["단백질","엽산","철분","비타민C"],tip:"레몬즙은 철분 흡수율을 높여줌"},
+{id:21,name:"표고버섯 들깨볶음",ingredients:["표고버섯 200g","들깨가루 1T","마늘 2쪽","올리브유 1T","소금 약간"],tags:["채소볶음","버섯"],nutrition:["비타민D","오메가3","식이섬유"],tip:"들깨가루는 마지막에 넣어야 고소함 유지"},
+{id:22,name:"무 나물볶음",ingredients:["무 1/4개","들기름 1T","마늘 1쪽","소금 약간","통깨 약간"],tags:["나물볶음","무"],nutrition:["비타민C","소화효소","식이섬유"],tip:"채 썰어 소금에 절였다 볶으면 촉촉"},
+{id:23,name:"양파 달걀볶음",ingredients:["양파 1개","달걀 3개","올리브유 1T","소금 약간","통깨 약간"],tags:["채소볶음","달걀"],nutrition:["단백질","퀘르세틴","비타민B"],tip:"양파를 충분히 볶아 단맛 끌어내기"},
+{id:24,name:"부추 달걀볶음",ingredients:["부추 100g","달걀 2개","올리브유 1T","소금 약간","참기름 약간"],tags:["채소볶음","달걀"],nutrition:["단백질","비타민K","엽산"],tip:"부추는 센 불에 10초만 볶아야 풋내 없음"},
+{id:25,name:"두부 스크램블",ingredients:["두부 1모","달걀 2개","당근 약간","대파 약간","올리브유 1T","소금 약간","강황가루 약간"],tags:["채소볶음","두부"],nutrition:["단백질","칼슘","항산화"],tip:"강황은 색도 예쁘고 항염 효과도 있음"},
+{id:26,name:"연어 구이",ingredients:["연어 200g","레몬 반개","올리브유 1T","소금 약간","후추 약간"],tags:["구이","연어"],nutrition:["오메가3","DHA","단백질","비타민D"],tip:"껍질 면 먼저 굽기. 완전히 익혀야 함"},
+{id:27,name:"달걀찜",ingredients:["달걀 3개","다시마물 200ml","소금 약간","참기름 약간","대파 약간"],tags:["찜","달걀"],nutrition:["단백질","비타민D","콜린"],tip:"약불+뚜껑으로 천천히 익혀야 부드러움"},
+{id:28,name:"소고기 시금치볶음",ingredients:["소불고기용 150g","시금치 150g","마늘 2쪽","간장 1T","참기름 1T","통깨 약간"],tags:["채소볶음","소고기"],nutrition:["철분","엽산","단백질"],tip:"비타민C 음식과 함께 먹으면 철분 흡수 UP"},
+{id:29,name:"두부 미역국",ingredients:["두부 반모","건미역 10g","멸치육수 500ml","된장 1T","마늘 1쪽","참기름 약간"],tags:["국","미역"],nutrition:["칼슘","요오드","단백질"],tip:"미역은 찬물에 30분 불리기"},
+{id:30,name:"닭가슴살 숙주볶음",ingredients:["닭가슴살 150g","숙주 200g","마늘 2쪽","굴소스 1T","참기름 약간","소금 약간"],tags:["채소볶음","닭가슴살"],nutrition:["단백질","비타민C","엽산"],tip:"숙주는 센 불에 1분만 볶아 아삭함 살리기"},
+{id:31,name:"아욱 된장국",ingredients:["아욱 100g","된장 1.5T","멸치육수 500ml","두부 반모","마늘 1쪽"],tags:["국","아욱"],nutrition:["칼슘","엽산","비타민C"],tip:"손으로 주물러 씻어야 아린맛 제거"},
+{id:32,name:"애호박 새우볶음",ingredients:["애호박 1개","새우 150g","마늘 2쪽","올리브유 1T","소금 약간","후추 약간"],tags:["채소볶음","새우"],nutrition:["단백질","칼슘","비타민A"],tip:"새우는 볶기 전 키친타월로 수분 제거"},
+{id:33,name:"브로콜리 두부볶음",ingredients:["브로콜리 150g","두부 반모","마늘 2쪽","올리브유 1T","굴소스 1T","참기름 약간"],tags:["채소볶음","브로콜리"],nutrition:["엽산","단백질","칼슘","비타민C"],tip:"브로콜리는 먼저 살짝 데친 후 볶기"},
+{id:34,name:"감자 올리브볶음",ingredients:["감자 2개","올리브유 2T","마늘 2쪽","로즈마리 약간","소금 약간","후추 약간"],tags:["채소볶음","감자"],nutrition:["비타민C","칼륨","식이섬유"],tip:"얇게 슬라이스해야 빨리 익음"},
+{id:35,name:"열무 된장무침",ingredients:["열무 200g","된장 1T","마늘 1쪽","참기름 1T","통깨 약간"],tags:["무침","열무"],nutrition:["엽산","칼슘","비타민C"],tip:"살짝만 데쳐 아삭함 유지"},
+{id:36,name:"깻잎 간장무침",ingredients:["깻잎 100g","간장 1T","참기름 1T","마늘 1쪽","통깨 약간"],tags:["무침","깻잎"],nutrition:["철분","칼슘","비타민K"],tip:"한 장씩 양념 발라 재우면 맛있음"},
+{id:37,name:"콩나물 소고기볶음",ingredients:["콩나물 200g","소고기 다짐육 100g","마늘 2쪽","간장 1T","참기름 1T","통깨 약간"],tags:["채소볶음","소고기"],nutrition:["철분","단백질","비타민C"],tip:"센 불에 빠르게 볶아 아삭함 살리기"},
+{id:38,name:"고구마 버터구이",ingredients:["고구마 2개","버터 1T","꿀 약간","소금 약간"],tags:["구이","고구마"],nutrition:["베타카로틴","비타민A","식이섬유"],tip:"전자레인지 5분 후 팬에 버터 구이로 마무리"},
+{id:39,name:"참나물 무침",ingredients:["참나물 150g","된장 1T","참기름 1T","마늘 1쪽","통깨 약간"],tags:["무침","참나물"],nutrition:["엽산","칼슘","철분"],tip:"살짝 데쳐 찬물에 헹구면 색이 선명"},
+{id:40,name:"순두부 달걀찜",ingredients:["순두부 200g","달걀 2개","다시마물 100ml","소금 약간","참기름 약간","대파 약간"],tags:["찜","순두부"],nutrition:["단백질","칼슘","콜린"],tip:"뚜껑 덮고 약불 8분. 입덧 심한 날에도 좋아요"},
+{id:41,name:"미역줄기 볶음",ingredients:["미역줄기 150g","마늘 2쪽","올리브유 1T","참기름 1T","간장 0.5T","통깨 약간"],tags:["채소볶음","미역"],nutrition:["칼슘","요오드","식이섬유"],tip:"소금 빼고 물에 담가 염분 제거"},
+{id:42,name:"닭안심 파프리카볶음",ingredients:["닭안심 200g","파프리카 2개","양파 반개","올리브유 1T","소금 약간","후추 약간"],tags:["채소볶음","닭안심"],nutrition:["단백질","비타민C","베타카로틴"],tip:"파프리카 색상 다양하게 쓰면 영양도 비주얼도 UP"},
+{id:43,name:"두부 된장찌개",ingredients:["두부 1모","애호박 반개","된장 2T","멸치육수 600ml","마늘 2쪽","대파 약간"],tags:["찌개","두부"],nutrition:["단백질","칼슘","이소플라본"],tip:"된장은 육수에 풀어서 마지막에 추가"},
+{id:44,name:"숙주 나물볶음",ingredients:["숙주 300g","마늘 2쪽","참기름 1T","소금 약간","통깨 약간"],tags:["나물볶음","숙주"],nutrition:["비타민C","엽산","식이섬유"],tip:"볶는 시간은 1분. 오래 볶으면 물 생김"},
+{id:45,name:"가지 새우볶음",ingredients:["가지 2개","새우 150g","마늘 2쪽","굴소스 1T","올리브유 1T","참기름 약간"],tags:["채소볶음","새우"],nutrition:["단백질","칼슘","안토시아닌"],tip:"가지는 어슷 썰어야 새우와 크기가 맞음"},
+{id:46,name:"버섯 청경채볶음",ingredients:["새송이버섯 100g","청경채 150g","마늘 2쪽","굴소스 1T","올리브유 1T","참기름 약간"],tags:["채소볶음","버섯"],nutrition:["칼슘","비타민D","식이섬유"],tip:"굴소스 하나로 충분. 추가 소금 불필요"},
+{id:47,name:"소고기 당근볶음",ingredients:["소불고기용 150g","당근 1개","양파 반개","간장 1T","참기름 1T","마늘 2쪽"],tags:["채소볶음","소고기"],nutrition:["철분","단백질","베타카로틴"],tip:"당근은 기름에 볶아야 베타카로틴 흡수 좋음"},
+{id:48,name:"콩나물 된장국",ingredients:["콩나물 200g","된장 1.5T","멸치육수 500ml","마늘 1쪽","대파 약간"],tags:["국","콩나물"],nutrition:["비타민C","단백질","식이섬유"],tip:"뚜껑 덮고 끓여야 비린내 없음"},
+{id:49,name:"두부 채소 된장볶음",ingredients:["두부 1모","애호박 반개","당근 반개","된장 1T","마늘 2쪽","올리브유 1T","참기름 약간"],tags:["채소볶음","두부"],nutrition:["단백질","칼슘","베타카로틴"],tip:"된장 넣으면 따로 소금 간 불필요"},
+{id:50,name:"느타리버섯 닭안심볶음",ingredients:["느타리버섯 150g","닭안심 200g","마늘 2쪽","간장 1T","올리브유 1T","대파 약간","참기름 약간"],tags:["채소볶음","버섯"],nutrition:["단백질","비타민D","식이섬유"],tip:"느타리는 손으로 찢어야 볶을 때 식감 좋음"}
+];
+
+var STEPS = {
+1:["새송이버섯·표고버섯을 먹기 좋게 썰어요.","팬을 센 불로 달군 뒤 올리브유를 둘러요.","버섯을 넣고 수분이 날아갈 때까지 센 불에 볶아요.","버터와 마늘을 넣고 30초 더 볶아요.","소금으로 간 맞추고 불을 꺼요."],
+2:["브로콜리를 한 입 크기로 잘라 끓는 물에 1분 데쳐요.","찬물에 헹궈 물기를 빼요.","팬에 올리브유를 두르고 마늘을 볶아 향을 내요.","브로콜리를 넣고 센 불에 2분 볶아요.","소금으로 간하고 통깨를 뿌려요."],
+3:["시금치를 다듬어 끓는 물에 30초 데쳐요.","찬물에 헹군 뒤 꼭 짜서 물기를 빼요.","참기름·간장·다진마늘을 넣고 조물조물 무쳐요.","통깨를 뿌려 완성해요."],
+4:["두부를 키친타월로 눌러 물기를 완전히 빼요.","두부를 1cm 두께로 썰어요.","팬에 올리브유를 두르고 두부를 노릇하게 구워요.","간장·참기름·다진마늘을 넣고 약불에 조려요.","대파를 넣고 한 번 더 볶아 마무리해요."],
+5:["애호박을 반달 모양으로 썰고 달걀을 풀어요.","팬에 올리브유를 두르고 애호박을 중불에 2분 볶아요.","소금으로 간하고 달걀을 부어요.","달걀이 반숙이 될 때 대파를 넣고 불을 꺼요."],
+6:["파프리카는 씨를 제거하고 먹기 좋게 썰어요.","새우는 키친타월로 수분을 닦아요.","팬에 올리브유와 마늘을 볶아 향을 내요.","새우를 먼저 볶다가 파프리카를 넣어요.","센 불에 2분 볶고 소금으로 간해요."],
+7:["당근을 채 썰거나 어슷하게 썰어요.","팬에 올리브유를 두르고 마늘을 볶아 향을 내요.","당근을 넣고 중불에 3분 볶아요.","들깨가루를 넣고 1분 더 볶아요.","소금으로 간을 맞춰 완성해요."],
+8:["청경채는 밑동을 자르고 낱장으로 떼요.","팬에 올리브유와 마늘을 중불로 달궈요.","줄기 부분을 먼저 1분 볶아요.","잎을 넣고 굴소스를 넣어 30초 볶아요.","참기름을 두르고 불을 꺼요."],
+9:["양배추를 한 입 크기로 손으로 뜯어요.","팬에 올리브유와 마늘을 볶아 향을 내요.","양배추를 넣고 중불에 2분 볶아요.","된장을 넣고 잘 섞으며 1분 더 볶아요.","참기름을 두르고 마무리해요."],
+10:["가지를 어슷하게 썰어 소금에 10분 절여요.","키친타월로 물기를 가볍게 닦아요.","팬에 올리브유를 충분히 두르고 가지를 볶아요.","간장과 마늘을 넣고 중불에 2분 더 볶아요.","참기름과 통깨를 뿌려 완성해요."],
+11:["닭안심을 얇게 포 떠서 소금·후추로 밑간해요.","브로콜리를 한 입 크기로 잘라 살짝 데쳐요.","팬에 올리브유를 두르고 닭안심을 먼저 볶아요.","익으면 브로콜리와 마늘을 넣어요.","함께 2분 볶고 소금으로 간해요."],
+12:["팽이버섯은 뿌리를 자르고 손으로 뜯어요.","달걀을 간장과 함께 풀어요.","팬에 올리브유를 두르고 대파를 볶아 향을 내요.","팽이버섯을 넣고 센 불에 1분 볶아요.","달걀물을 부어 반숙으로 익히고 참기름을 둘러요."],
+13:["시금치를 끓는 물에 30초 데쳐 짜 놓아요.","두부를 1cm로 썰어 팬에 노릇하게 구워요.","팬에 올리브유를 두르고 두부와 시금치, 마늘을 함께 볶아요.","간장과 참기름으로 간을 맞춰요."],
+14:["소고기를 간장·마늘·설탕·참기름에 10분 재워요.","버섯을 먹기 좋게 썰고 양파도 채 썰어요.","팬에 재운 소고기를 센 불에 볶아요.","고기가 익으면 버섯과 양파를 넣고 볶아요.","수분이 날아가면 완성이에요."],
+15:["애호박과 두부를 먹기 좋게 썰어요.","팬에 기름을 두르고 두부를 노릇하게 구워요.","애호박을 넣고 함께 볶다가 간장을 넣어요.","물 2T를 넣고 뚜껑 덮어 약불에 5분 조려요.","참기름과 통깨로 마무리해요."],
+16:["단호박의 씨를 제거하고 먹기 좋게 썰어요.","내열 그릇에 담고 랩을 씌워 전자레인지 5분 돌려요.","팬에 버터를 녹이고 단호박을 넣어요.","소금 약간과 꿀을 뿌리고 중불에 2분 구워요.","껍질이 노릇해지면 완성이에요."],
+17:["콩나물을 씻어 냄비에 넣고 물을 자박하게 부어요.","뚜껑을 덮고 중불에 5분 삶아요.","찬물에 헹궈 물기를 빼요.","참기름·간장·다진마늘·대파를 넣고 무쳐요.","통깨를 뿌려 완성해요."],
+18:["오이를 어슷하게 썰어 소금에 10분 절여요.","물기를 꼭 짜서 빼요.","식초·설탕·소금을 섞어 양념장을 만들어요.","오이에 양념장을 넣고 무쳐요.","참기름과 통깨를 뿌려요."],
+19:["연근을 0.5cm 두께로 썰어 식초 물에 담가요.","끓는 물에 연근을 2분 데쳐 건져요.","팬에 간장·설탕·식초를 넣고 끓여요.","연근을 넣고 약불에 10분 조려요.","참기름과 통깨로 마무리해요."],
+20:["닭안심을 얇게 썰어 소금·후추로 밑간해요.","팬에 올리브유를 두르고 닭안심을 볶아요.","닭안심이 익으면 마늘을 넣어요.","시금치를 넣고 센 불에 1분 볶아요.","레몬즙을 뿌리고 소금으로 간해요."],
+21:["표고버섯을 먹기 좋게 썰어요.","팬에 올리브유와 마늘을 볶아 향을 내요.","표고버섯을 넣고 중불에 3분 볶아요.","들깨가루를 넣고 30초 더 볶아요.","소금으로 간을 맞춰요."],
+22:["무를 가늘게 채 썰어 소금에 10분 절여요.","물기를 꼭 짜요.","팬에 들기름을 두르고 마늘을 볶아요.","무를 넣고 중불에 3분 볶아요.","소금으로 간하고 통깨를 뿌려요."],
+23:["양파를 채 썰고 달걀을 풀어요.","팬에 올리브유를 두르고 양파를 중불에 3분 볶아요.","양파가 투명해지면 달걀물을 부어요.","젓가락으로 저으며 스크램블처럼 익혀요.","소금으로 간하고 통깨를 뿌려요."],
+24:["부추를 4cm 길이로 썰어요.","달걀을 소금과 함께 풀어요.","팬에 올리브유를 두르고 센 불로 달궈요.","달걀물을 먼저 볶다가 부추를 넣어요.","10초만 빠르게 볶고 참기름을 둘러요."],
+25:["두부를 으깨고 달걀을 섞어요.","당근과 대파를 잘게 다져요.","팬에 올리브유를 두르고 당근을 먼저 볶아요.","두부달걀 혼합물과 강황가루를 넣고 볶아요.","소금으로 간하고 스크램블처럼 완성해요."],
+26:["연어에 소금·후추로 밑간해요.","팬에 올리브유를 두르고 중불로 달궈요.","껍질 면을 아래로 해서 4분 구워요.","뒤집어서 3분 더 구워 완전히 익혀요.","레몬즙을 뿌려 완성해요."],
+27:["달걀을 잘 풀어 다시마물과 소금을 섞어요.","체에 걸러 매끄럽게 만들어요.","내열 그릇에 붓고 랩을 씌워요.","전자레인지 2분 또는 찜기에 8분 쪄요.","참기름과 대파로 마무리해요."],
+28:["소고기를 간장·참기름에 5분 재워요.","시금치는 끓는 물에 30초 데쳐 짜요.","팬에 기름을 두르고 소고기를 볶아요.","시금치와 마늘을 넣고 함께 볶아요.","통깨를 뿌려 완성해요."],
+29:["건미역을 찬물에 30분 불려요.","냄비에 참기름을 두르고 미역을 볶아요.","멸치육수를 넣고 끓여요.","두부를 넣고 된장을 풀어 넣어요.","마늘을 넣고 5분 더 끓여요."],
+30:["닭가슴살을 얇게 썰어 소금·후추로 밑간해요.","팬에 기름을 두르고 닭가슴살을 볶아요.","굴소스와 마늘을 넣어요.","숙주를 넣고 센 불에 1분 볶아요.","참기름을 두르고 마무리해요."],
+31:["아욱을 손으로 주물러 씻어요.","냄비에 멸치육수를 끓여요.","아욱과 된장을 넣어요.","두부와 마늘을 넣고 5분 끓여요.","대파를 넣어 마무리해요."],
+32:["애호박은 반달로 썰고 새우는 물기를 닦아요.","팬에 올리브유와 마늘을 볶아요.","새우를 먼저 볶다가 분홍색으로 익으면 꺼내요.","애호박을 넣고 2분 볶아요.","새우를 다시 넣고 소금으로 간해요."],
+33:["브로콜리를 데치고 두부는 물기를 빼요.","두부를 노릇하게 구워요.","팬에 마늘과 올리브유를 볶아요.","브로콜리와 두부를 넣고 굴소스를 넣어요.","참기름을 두르고 완성해요."],
+34:["감자를 0.5cm 두께로 얇게 썰어요.","팬에 올리브유를 두르고 마늘·로즈마리를 볶아요.","감자를 넣어요.","뚜껑 덮고 중불에 5분, 뒤집어 3분 익혀요.","소금·후추로 간해요."],
+35:["열무를 다듬어 끓는 물에 1분 데쳐요.","찬물에 헹궈 물기를 빼요.","된장·마늘·참기름을 넣고 무쳐요.","통깨를 뿌려 완성해요."],
+36:["깻잎을 씻어 물기를 닦아요.","간장·참기름·마늘을 섞어 양념을 만들어요.","깻잎 한 장씩 양념을 발라가며 쌓아요.","냉장고에 30분 재워요.","통깨를 뿌려 완성해요."],
+37:["콩나물을 씻어요.","팬에 기름을 두르고 다짐육을 볶아요.","고기가 익으면 콩나물을 넣어요.","간장과 마늘을 넣고 센 불에 2분 볶아요.","참기름과 통깨로 마무리해요."],
+38:["고구마를 씻어 랩으로 싸요.","전자레인지에 5분 돌려요.","팬에 버터를 녹여요.","고구마를 넣고 양면 2분씩 구워요.","소금과 꿀을 뿌려 완성해요."],
+39:["참나물을 다듬어 끓는 물에 1분 데쳐요.","찬물에 헹궈 물기를 짜요.","된장·마늘·참기름을 넣어요.","조물조물 무쳐요.","통깨를 뿌려 완성해요."],
+40:["순두부·달걀·다시마물·소금을 잘 섞어요.","내열 그릇에 붓고 랩을 씌워요.","전자레인지 2분 30초 돌려요.","대파와 참기름을 올려요.","부드럽게 완성돼요."],
+41:["미역줄기를 물에 담가 소금을 빼요.","한 입 크기로 잘라요.","팬에 올리브유와 마늘을 볶아요.","미역줄기를 넣고 센 불에 2분 볶아요.","간장·참기름·통깨로 마무리해요."],
+42:["닭안심을 한 입 크기로 썰고 밑간해요.","파프리카와 양파를 먹기 좋게 썰어요.","팬에 올리브유를 두르고 닭안심을 볶아요.","익으면 채소를 넣고 센 불에 2분 볶아요.","소금·후추로 간해요."],
+43:["두부와 애호박을 썰어요.","냄비에 멸치육수를 끓여요.","된장을 풀어 넣어요.","두부·애호박·마늘을 넣고 끓여요.","대파를 넣어 마무리해요."],
+44:["숙주를 씻어 물기를 빼요.","팬에 기름을 두르고 마늘을 볶아요.","숙주를 넣고 센 불에 1분 볶아요.","소금으로 간해요.","참기름과 통깨를 뿌려요."],
+45:["가지를 어슷하게 썰어요.","새우는 물기를 닦아요.","팬에 올리브유와 마늘을 볶아요.","가지를 먼저 볶다가 새우를 넣어요.","굴소스를 넣고 1분 더 볶아요."],
+46:["버섯과 청경채를 썰어요.","팬에 올리브유와 마늘을 볶아요.","버섯을 먼저 2분 볶아요.","청경채를 넣고 굴소스를 넣어요.","30초 볶고 참기름을 둘러요."],
+47:["소고기·당근·양파를 썰어요.","소고기를 간장·마늘·참기름에 재워요.","팬에 재운 소고기를 볶아요.","당근과 양파를 넣고 함께 볶아요.","수분이 날아가면 완성해요."],
+48:["콩나물을 씻어요.","냄비에 멸치육수를 끓여요.","된장을 풀어요.","콩나물과 마늘을 넣어요.","뚜껑 덮고 5분 끓이고 대파 넣어요."],
+49:["두부·애호박·당근을 썰어요.","팬에 올리브유를 두르고 된장을 볶아요.","당근을 먼저 볶아요.","두부와 애호박을 넣고 볶아요.","마늘과 참기름으로 마무리해요."],
+50:["느타리버섯을 손으로 찢어요.","닭안심을 얇게 썰어 밑간해요.","팬에 올리브유를 두르고 닭안심을 볶아요.","버섯·마늘·간장을 넣어요.","대파와 참기름으로 마무리해요."]
+};
+
+var DAYS = ['월','화','수','목','금'];
+var EMOJIS = {'채소볶음':'🥦','무침':'🥗','조림':'🍲','찜':'🫕','구이':'🔥','나물볶음':'🌿','국':'🍵','찌개':'🥘'};
+var NCLASS = {'엽산':'nf','철분':'ni','칼슘':'nc','단백질':'np','오메가3':'no','DHA':'no','비타민C':'nv','비타민D':'nv','비타민A':'nv','베타카로틴':'nv'};
+var CATS = [
+  {name:'채소류',icon:'🥦',keys:['버섯','브로콜리','시금치','애호박','파프리카','당근','청경채','양배추','가지','콩나물','오이','연근','아욱','부추','열무','깻잎','숙주','참나물','감자','단호박','고구마','무','양파','미역']},
+  {name:'단백질류',icon:'🥩',keys:['닭안심','닭가슴살','소불고기','소고기','새우','연어','달걀','두부','순두부']},
+  {name:'양념류',icon:'🧄',keys:['마늘','간장','참기름','들기름','올리브유','된장','굴소스','버터','들깨가루','강황가루']},
+  {name:'기타',icon:'🛒',keys:[]}
+];
+
+var weekPlan = [];
+var shopChecked = {};
+var usedIds = [];
+
+function getEmoji(r) {
+  for(var i=0;i<r.tags.length;i++){if(EMOJIS[r.tags[i]])return EMOJIS[r.tags[i]];}
+  return '🍽️';
+}
+function getNClass(n) { return NCLASS[n]||'nd'; }
+
+function pickRandom(n) {
+  var pool = RECIPES.filter(function(r){return usedIds.indexOf(r.id)<0;});
+  if(pool.length < n) pool = RECIPES.slice();
+  var picked = [];
+  var tmp = pool.slice();
+  while(picked.length < n && tmp.length > 0) {
+    var idx = Math.floor(Math.random()*tmp.length);
+    picked.push(tmp.splice(idx,1)[0]);
+  }
+  usedIds = usedIds.concat(picked.map(function(r){return r.id;})).slice(-20);
+  return picked;
+}
+
+function generateWeek() {
+  weekPlan = pickRandom(5);
+  shopChecked = {};
+  renderMeal();
+  renderShop();
+}
+
+function swapOne(i) {
+  var ids = weekPlan.map(function(r){return r.id;});
+  var pool = RECIPES.filter(function(r){return ids.indexOf(r.id)<0;});
+  if(!pool.length) return;
+  weekPlan[i] = pool[Math.floor(Math.random()*pool.length)];
+  renderMeal();
+  renderShop();
+}
+
+function renderMeal() {
+  var el = document.getElementById('view-meal');
+  var html = '<div class="slabel">이번 주 저녁 식단</div>';
+  for(var i=0;i<DAYS.length;i++) {
+    var r = weekPlan[i];
+    if(!r) continue;
+    var nutHtml = r.nutrition.map(function(n){return '<span class="nb '+getNClass(n)+'">'+n+'</span>';}).join('');
+    var tagHtml = r.tags.slice(0,3).map(function(t){return '<span class="rtag">'+t+'</span>';}).join('');
+    html += '<div class="dcard">'
+      +'<div class="dhead"><div class="dname">'+DAYS[i]+'요일</div>'
+      +'<button class="sbtn" onclick="swapOne('+i+')">다른 메뉴</button></div>'
+      +'<div class="rslot" onclick="openModal('+r.id+')">'
+      +'<div class="ricon">'+getEmoji(r)+'</div>'
+      +'<div class="rinfo"><div class="rname">'+r.name+'</div>'
+      +'<div class="rtags">'+tagHtml+'</div></div>'
+      +'<div class="arrow">›</div>'
+      +'</div>'
+      +'<div class="nutrow">'+nutHtml+'</div>'
+      +'<div class="tip">💡 '+r.tip+'</div>'
+      +'</div>';
+  }
+  el.innerHTML = html;
+}
+
+function openModal(id) {
+  var r = null;
+  for(var i=0;i<RECIPES.length;i++){if(RECIPES[i].id===id){r=RECIPES[i];break;}}
+  if(!r) return;
+  document.getElementById('m-emoji').textContent = getEmoji(r);
+  document.getElementById('m-title').textContent = r.name;
+  document.getElementById('m-tags').innerHTML = r.tags.map(function(t){return '<span class="rtag">'+t+'</span>';}).join('');
+  document.getElementById('m-nut').innerHTML = r.nutrition.map(function(n){return '<span class="nb '+getNClass(n)+'">'+n+'</span>';}).join('');
+  document.getElementById('m-ing').innerHTML = r.ingredients.map(function(ing){
+    var m = ing.match(/^(.+?)\s+([\d\/]+[a-zA-Zg가-힣]+.*)$/);
+    var nm = m ? m[1] : ing;
+    var qty = m ? m[2] : '';
+    return '<div class="iitem"><span class="iiname">'+nm+'</span><span class="iiqty">'+qty+'</span></div>';
+  }).join('');
+  var steps = STEPS[id] || ['조리 방법을 준비 중이에요.'];
+  document.getElementById('m-steps').innerHTML = steps.map(function(s,i){
+    return '<div class="stepitem"><div class="stepnum">'+(i+1)+'</div><div class="steptxt">'+s+'</div></div>';
+  }).join('');
+  document.getElementById('m-tip').textContent = r.tip;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function overlayClose(e) {
+  if(e.target === document.getElementById('modal')) closeModal();
+}
+
+document.getElementById('mcloseBtn').addEventListener('click', closeModal);
+
+function buildShopList() {
+  var all = {};
+  for(var i=0;i<weekPlan.length;i++){
+    var r = weekPlan[i];
+    for(var j=0;j<r.ingredients.length;j++){
+      var ing = r.ingredients[j];
+      var m = ing.match(/^(.+?)\s+([\d\/]+[a-zA-Zg가-힣]+.*)$/);
+      var nm = m ? m[1].trim() : ing.trim();
+      var qty = m ? m[2] : '';
+      if(!all[nm]) all[nm] = qty;
+    }
+  }
+  return all;
+}
+
+function renderShop() {
+  var el = document.getElementById('view-shop');
+  if(!weekPlan.length){el.innerHTML='<div class="empty">먼저 식단을 뽑아주세요</div>';return;}
+  var all = buildShopList();
+  var names = Object.keys(all);
+  var total = names.length;
+  var done = names.filter(function(n){return shopChecked[n];}).length;
+  var pct = total ? Math.round(done/total*100) : 0;
+  var html = '<div class="shead"><div><div class="scnt">'+done+' / '+total+'</div>'
+    +'<div class="scntl">항목 완료</div>'
+    +'<div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div></div>'
+    +'<button class="sbtn" style="font-size:13px;padding:6px 12px" onclick="shopChecked={};renderShop()">초기화</button></div>';
+
+  var assigned = [];
+  for(var c=0;c<CATS.length;c++){
+    var cat = CATS[c];
+    var items;
+    if(cat.name === '기타') {
+      items = names.filter(function(n){return assigned.indexOf(n)<0;});
+    } else {
+      items = names.filter(function(n){
+        for(var k=0;k<cat.keys.length;k++){if(n.indexOf(cat.keys[k])>=0)return true;}
+        return false;
+      });
+    }
+    if(!items.length) continue;
+    items.forEach(function(n){if(assigned.indexOf(n)<0)assigned.push(n);});
+    var catDone = items.filter(function(n){return shopChecked[n];}).length;
+    html += '<div class="scat"><div class="catheader"><span>'+cat.icon+'</span>'
+      +'<span class="catname">'+cat.name+'</span>'
+      +'<span class="catcnt">'+catDone+'/'+items.length+'</span></div>';
+    for(var k=0;k<items.length;k++){
+      var nm = items[k];
+      var d = shopChecked[nm];
+      var safeNm = nm.replace(/'/g,"\\'");
+      html += '<div class="sitem'+(d?' done':'')+'" onclick="toggleItem(\''+safeNm+'\')">'
+        +'<div class="chk"><span class="ckico">✓</span></div>'
+        +'<span class="iname">'+nm+'</span>'
+        +'<span class="iqty">'+(all[nm]||'')+'</span></div>';
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function toggleItem(nm) {
+  shopChecked[nm] = !shopChecked[nm];
+  renderShop();
+}
+
+function showTab(t) {
+  document.getElementById('view-meal').style.display = t==='meal'?'':'none';
+  document.getElementById('view-shop').style.display = t==='shop'?'':'none';
+  document.getElementById('tab-meal').className = 'tab'+(t==='meal'?' on':'');
+  document.getElementById('tab-shop').className = 'tab'+(t==='shop'?' on':'');
+  document.getElementById('bbar').style.display = t==='meal'?'':'none';
+}
+
+generateWeek();
+
+// ── PWA 설치 배너 ──────────────────────────────────────────
+var deferredPrompt = null;
+var installBanner = null;
+
+function createBanner(html, id) {
+  var el = document.createElement('div');
+  el.id = id;
+  el.innerHTML = html;
+  document.body.appendChild(el);
+  return el;
+}
+
+// Android: 브라우저가 설치 가능 이벤트 발생 시 캐치
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // 이미 설치됐으면 배너 안 띄움
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+  installBanner = createBanner(
+    '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px">'
+    + '<span style="font-size:28px">🥦</span>'
+    + '<div style="flex:1">'
+    + '<div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:2px">홈 화면에 추가할까요?</div>'
+    + '<div style="font-size:12px;color:#666">앱처럼 바로 열 수 있어요</div>'
+    + '</div>'
+    + '<button id="install-yes" style="background:#2d7a5a;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer">추가</button>'
+    + '<button id="install-no" style="background:#f0f0f0;color:#666;border:none;padding:8px 12px;border-radius:20px;font-size:13px;cursor:pointer">나중에</button>'
+    + '</div>',
+    'install-banner'
+  );
+  installBanner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:448px;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.15);z-index:300;animation:slideUp2 .3s ease';
+
+  var style = document.createElement('style');
+  style.textContent = '@keyframes slideUp2{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}';
+  document.head.appendChild(style);
+
+  document.getElementById('install-yes').addEventListener('click', function() {
+    installBanner.remove();
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(r) {
+      deferredPrompt = null;
+    });
+  });
+
+  document.getElementById('install-no').addEventListener('click', function() {
+    installBanner.remove();
+    sessionStorage.setItem('install-dismissed', '1');
+  });
+});
+
+// iOS 감지: 사파리이고 아직 설치 안 된 경우
+var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+if (isIOS && isSafari && !isStandalone && !sessionStorage.getItem('ios-dismissed')) {
+  setTimeout(function() {
+    var banner = createBanner(
+      '<div style="padding:14px 16px 10px">'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+      + '<span style="font-size:24px">🥦</span>'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a1a1a">홈 화면에 추가하면 앱처럼 써요</div>'
+      + '<div style="font-size:12px;color:#666;margin-top:1px">아래 버튼을 탭해 추가하세요</div></div>'
+      + '<button id="ios-close" style="margin-left:auto;background:none;border:none;font-size:18px;color:#999;cursor:pointer;padding:0 4px">✕</button>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center;gap:8px;background:#f7f5f0;border-radius:10px;padding:10px 12px">'
+      + '<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#444">'
+      + '<span style="font-size:18px">⬆️</span>'
+      + '<span>하단 <strong>공유 버튼</strong> 탭</span>'
+      + '</div>'
+      + '<span style="color:#ccc;margin:0 4px">→</span>'
+      + '<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#444">'
+      + '<span style="font-size:18px">＋</span>'
+      + '<span><strong>홈 화면에 추가</strong></span>'
+      + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div style="width:16px;height:16px;background:#fff;transform:rotate(45deg);position:absolute;bottom:-7px;left:50%;margin-left:-8px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0"></div>',
+      'ios-banner'
+    );
+    banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:448px;background:#fff;border-radius:16px;border:1px solid #e8e8e8;box-shadow:0 4px 20px rgba(0,0,0,0.12);z-index:300;animation:slideUp2 .3s ease';
+
+    document.getElementById('ios-close').addEventListener('click', function() {
+      banner.remove();
+      sessionStorage.setItem('ios-dismissed', '1');
+    });
+  }, 2500);
+}
+
+// 설치 완료 감지
+window.addEventListener('appinstalled', function() {
+  if (installBanner) installBanner.remove();
+  var toast = document.createElement('div');
+  toast.textContent = '홈 화면에 추가됐어요!';
+  toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#2d7a5a;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:400;animation:slideUp2 .3s ease';
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 2500);
+});
+</script>
+</body>
+</html>
