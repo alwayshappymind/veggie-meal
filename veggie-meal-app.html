@@ -91,6 +91,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sa
 .tipbox{background:var(--green-light);border-radius:12px;padding:12px 14px;display:flex;gap:8px;align-items:flex-start}
 .tiptxt{font-size:13px;color:var(--green);line-height:1.55}
 .nutrow2{display:flex;flex-wrap:wrap;gap:6px}
+.save-bar{background:var(--card);border-top:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.save-bar-txt{font-size:13px;color:var(--sub)}
+.save-btn{background:var(--green);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer}
+.saved-card{background:var(--card);border-radius:var(--r);margin-bottom:10px;border:1px solid var(--border);overflow:hidden}
+.saved-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
+.saved-date{font-size:12px;font-weight:700;color:var(--green)}
+.saved-actions{display:flex;gap:6px}
+.load-btn{background:var(--green-light);color:var(--green);border:none;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer}
+.del-btn{background:#fff0f0;color:#c0522a;border:none;padding:5px 10px;border-radius:20px;font-size:12px;cursor:pointer}
+.saved-meals{padding:0 16px 14px;display:flex;flex-direction:column;gap:6px}
+.saved-meal-row{display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border)}
+.saved-meal-row:last-child{border-bottom:none}
+.saved-day{font-size:11px;font-weight:700;color:var(--hint);width:28px;flex-shrink:0}
+.saved-name{font-size:13px;color:var(--text);flex:1}
+.saved-emoji{font-size:14px;flex-shrink:0}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:400;white-space:nowrap;pointer-events:none}
 </style>
 </head>
 <body>
@@ -104,13 +120,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sa
   </div>
   <div class="tabs">
     <button class="tab on" id="tab-meal" onclick="showTab('meal')">주간 식단</button>
-    <button class="tab" id="tab-shop" onclick="showTab('shop')">장보기 리스트</button>
+    <button class="tab" id="tab-shop" onclick="showTab('shop')">장보기</button>
+    <button class="tab" id="tab-saved" onclick="showTab('saved')">저장 식단</button>
   </div>
 </div>
 
 <div class="main">
   <div id="view-meal"></div>
   <div id="view-shop" style="display:none"></div>
+  <div id="view-saved" style="display:none"></div>
 </div>
 
 <div class="moverlay" id="modal" onclick="overlayClose(event)">
@@ -149,8 +167,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sa
 </div>
 
 <div class="bbar" id="bbar">
-  <button class="bbtn sec" onclick="generateWeek()">식단 다시 뽑기</button>
-  <button class="bbtn pri" onclick="showTab('shop')">장보기 리스트 →</button>
+  <button class="bbtn sec" onclick="generateWeek()">다시 뽑기</button>
+  <button class="bbtn sec" onclick="saveWeek()" style="background:var(--green-light);color:var(--green)">이번 주 저장</button>
+  <button class="bbtn pri" onclick="showTab('shop')">장보기 →</button>
 </div>
 
 <script>
@@ -435,10 +454,94 @@ function toggleItem(nm) {
 function showTab(t) {
   document.getElementById('view-meal').style.display = t==='meal'?'':'none';
   document.getElementById('view-shop').style.display = t==='shop'?'':'none';
+  document.getElementById('view-saved').style.display = t==='saved'?'':'none';
   document.getElementById('tab-meal').className = 'tab'+(t==='meal'?' on':'');
   document.getElementById('tab-shop').className = 'tab'+(t==='shop'?' on':'');
+  document.getElementById('tab-saved').className = 'tab'+(t==='saved'?' on':'');
   document.getElementById('bbar').style.display = t==='meal'?'':'none';
+  if(t==='saved') renderSaved();
 }
+
+// ── 저장 기능 (localStorage) ─────────────────────────────
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('veggie-saved')||'[]'); } catch(e) { return []; }
+}
+function setSaved(arr) {
+  localStorage.setItem('veggie-saved', JSON.stringify(arr));
+}
+
+function saveWeek() {
+  if(!weekPlan.length) return;
+  var saved = getSaved();
+  var now = new Date();
+  var label = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일';
+  // 오늘 날짜 같은 거 있으면 덮어쓰기
+  var idx = saved.findIndex(function(s){return s.label===label;});
+  var entry = {label:label, ts:now.getTime(), ids:weekPlan.map(function(r){return r.id;})};
+  if(idx>=0) saved[idx] = entry;
+  else saved.unshift(entry);
+  setSaved(saved);
+  showToast('이번 주 식단이 저장됐어요!');
+}
+
+function loadWeek(ids) {
+  weekPlan = ids.map(function(id){
+    return RECIPES.find(function(r){return r.id===id;});
+  }).filter(Boolean);
+  shopChecked = {};
+  renderMeal();
+  renderShop();
+  showTab('meal');
+  showToast('식단을 불러왔어요');
+}
+
+function deleteSaved(ts) {
+  var saved = getSaved().filter(function(s){return s.ts!==ts;});
+  setSaved(saved);
+  renderSaved();
+}
+
+function renderSaved() {
+  var el = document.getElementById('view-saved');
+  var saved = getSaved();
+  if(!saved.length) {
+    el.innerHTML = '<div class="empty" style="margin-top:40px">저장된 식단이 없어요<br><span style="font-size:12px;margin-top:8px;display:block">주간 식단 탭에서 "이번 주 저장"을 눌러보세요</span></div>';
+    return;
+  }
+  var html = '<div class="slabel">저장된 식단</div>';
+  saved.forEach(function(s) {
+    html += '<div class="saved-card">'
+      +'<div class="saved-head">'
+      +'<div class="saved-date">📅 '+s.label+'</div>'
+      +'<div class="saved-actions">'
+      +'<button class="load-btn" onclick="loadWeek('+JSON.stringify(s.ids)+')">불러오기</button>'
+      +'<button class="del-btn" onclick="deleteSaved('+s.ts+')">삭제</button>'
+      +'</div></div>'
+      +'<div class="saved-meals">';
+    var days = ['월','화','수','목','금'];
+    s.ids.forEach(function(id, i) {
+      var r = RECIPES.find(function(x){return x.id===id;});
+      if(!r) return;
+      html += '<div class="saved-meal-row" onclick="openModal('+id+')">'
+        +'<div class="saved-day">'+days[i]+'</div>'
+        +'<div class="saved-emoji">'+getEmoji(r)+'</div>'
+        +'<div class="saved-name">'+r.name+'</div>'
+        +'<div style="color:#ccc;font-size:16px">›</div>'
+        +'</div>';
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();}, 2000);
+}
+
 
 generateWeek();
 
