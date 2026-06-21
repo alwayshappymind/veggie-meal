@@ -1,0 +1,19 @@
+{
+  "name": "채소볶음 건강식단",
+  "short_name": "채소식단",
+  "description": "채소볶음 중심 건강 식단 & 장보기",
+  "start_url": "/veggie-meal/veggie-meal-app.html",
+  "scope": "/veggie-meal/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#2d7a5a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%232d7a5a'/><text y='340' x='256' text-anchor='middle' font-size='300'>🥦</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

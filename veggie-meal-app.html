@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#2d7a5a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="채소식단">
+<link rel="manifest" href="manifest.json">
 <title>채소볶음 건강식단</title>
 <style>
 :root {
@@ -215,7 +220,7 @@ var RECIPES = [
 {id:37,name:"콩나물 소고기볶음",ingredients:["콩나물 200g","소고기 다짐육 100g","마늘 2쪽","간장 1T","참기름 1T","통깨 약간"],tags:["채소볶음","소고기"],nutrition:["철분","단백질","비타민C"],tip:"센 불에 빠르게 볶아 아삭함 살리기"},
 {id:38,name:"고구마 버터구이",ingredients:["고구마 2개","버터 1T","꿀 약간","소금 약간"],tags:["구이","고구마"],nutrition:["베타카로틴","비타민A","식이섬유"],tip:"전자레인지 5분 후 팬에 버터 구이로 마무리"},
 {id:39,name:"참나물 무침",ingredients:["참나물 150g","된장 1T","참기름 1T","마늘 1쪽","통깨 약간"],tags:["무침","참나물"],nutrition:["엽산","칼슘","철분"],tip:"살짝 데쳐 찬물에 헹구면 색이 선명"},
-{id:40,name:"순두부 달걀찜",ingredients:["순두부 200g","달걀 2개","다시마물 100ml","소금 약간","참기름 약간","대파 약간"],tags:["찜","순두부"],nutrition:["단백질","칼슘","콜린"],tip:"뚜껑 덮고 약불 8분. 입덧 심한 날에도 좋아요"},
+{id:40,name:"순두부 달걀찜",ingredients:["순두부 200g","달걀 2개","다시마물 100ml","소금 약간","참기름 약간","대파 약간"],tags:["찜","순두부"],nutrition:["단백질","칼슘","콜린"],tip:"뚜껑 덮고 약불 8분. 속이 불편한 날에도 부드럽게 먹기 좋아요"},
 {id:41,name:"미역줄기 볶음",ingredients:["미역줄기 150g","마늘 2쪽","올리브유 1T","참기름 1T","간장 0.5T","통깨 약간"],tags:["채소볶음","미역"],nutrition:["칼슘","요오드","식이섬유"],tip:"소금 빼고 물에 담가 염분 제거"},
 {id:42,name:"닭안심 파프리카볶음",ingredients:["닭안심 200g","파프리카 2개","양파 반개","올리브유 1T","소금 약간","후추 약간"],tags:["채소볶음","닭안심"],nutrition:["단백질","비타민C","베타카로틴"],tip:"파프리카 색상 다양하게 쓰면 영양도 비주얼도 UP"},
 {id:43,name:"두부 된장찌개",ingredients:["두부 1모","애호박 반개","된장 2T","멸치육수 600ml","마늘 2쪽","대파 약간"],tags:["찌개","두부"],nutrition:["단백질","칼슘","이소플라본"],tip:"된장은 육수에 풀어서 마지막에 추가"},
@@ -610,6 +615,15 @@ function showToast(msg) {
 
 
 generateWeek();
+
+// ── 서비스워커 등록 (PWA 앱 모드) ──────────────────────────
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js')
+      .then(function(r){ console.log('SW 등록:', r.scope); })
+      .catch(function(e){ console.log('SW 실패:', e); });
+  });
+}
 
 // ── PWA 설치 배너 ──────────────────────────────────────────
 var deferredPrompt = null;
