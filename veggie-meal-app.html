@@ -121,7 +121,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sa
   <div class="tabs">
     <button class="tab on" id="tab-meal" onclick="showTab('meal')">주간 식단</button>
     <button class="tab" id="tab-shop" onclick="showTab('shop')">장보기</button>
-    <button class="tab" id="tab-saved" onclick="showTab('saved')">저장 식단</button>
+    <button class="tab" id="tab-saved" onclick="showTab('saved')">저장</button>
+    <button class="tab" id="tab-recipes" onclick="showTab('recipes')">레시피</button>
   </div>
 </div>
 
@@ -129,6 +130,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sa
   <div id="view-meal"></div>
   <div id="view-shop" style="display:none"></div>
   <div id="view-saved" style="display:none"></div>
+  <div id="view-recipes" style="display:none"></div>
 </div>
 
 <div class="moverlay" id="modal" onclick="overlayClose(event)">
@@ -436,10 +438,17 @@ function renderShop() {
       var nm = items[k];
       var d = shopChecked[nm];
       var safeNm = nm.replace(/'/g,"\\'");
-      html += '<div class="sitem'+(d?' done':'')+'" onclick="toggleItem(\''+safeNm+'\')">'
+      var coupangUrl = 'https://www.coupang.com/np/search?q='+encodeURIComponent(nm)+'&listSize=36&isPriceRange=false&filterType=rocket';
+      html += '<div class="sitem'+(d?' done':'')+'">'
+        +'<div onclick="toggleItem(\''+safeNm+'\')" style="display:flex;align-items:center;gap:12px;flex:1;padding:11px 0 11px 16px">'
         +'<div class="chk"><span class="ckico">✓</span></div>'
         +'<span class="iname">'+nm+'</span>'
-        +'<span class="iqty">'+(all[nm]||'')+'</span></div>';
+        +'<span class="iqty">'+(all[nm]||'')+'</span>'
+        +'</div>'
+        +'<a href="'+coupangUrl+'" target="_blank" style="display:flex;align-items:center;padding:11px 14px 11px 8px;text-decoration:none;flex-shrink:0">'
+        +'<span style="font-size:11px;font-weight:700;color:#e4393c;background:#fff0f0;padding:3px 8px;border-radius:20px;white-space:nowrap">🚀 로켓</span>'
+        +'</a>'
+        +'</div>';
     }
     html += '</div>';
   }
@@ -452,14 +461,14 @@ function toggleItem(nm) {
 }
 
 function showTab(t) {
-  document.getElementById('view-meal').style.display = t==='meal'?'':'none';
-  document.getElementById('view-shop').style.display = t==='shop'?'':'none';
-  document.getElementById('view-saved').style.display = t==='saved'?'':'none';
-  document.getElementById('tab-meal').className = 'tab'+(t==='meal'?' on':'');
-  document.getElementById('tab-shop').className = 'tab'+(t==='shop'?' on':'');
-  document.getElementById('tab-saved').className = 'tab'+(t==='saved'?' on':'');
+  var views = ['meal','shop','saved','recipes'];
+  views.forEach(function(v){
+    document.getElementById('view-'+v).style.display = t===v?'':'none';
+    document.getElementById('tab-'+v).className = 'tab'+(t===v?' on':'');
+  });
   document.getElementById('bbar').style.display = t==='meal'?'':'none';
   if(t==='saved') renderSaved();
+  if(t==='recipes') renderRecipes();
 }
 
 // ── 저장 기능 (localStorage) ─────────────────────────────
@@ -474,14 +483,13 @@ function saveWeek() {
   if(!weekPlan.length) return;
   var saved = getSaved();
   var now = new Date();
-  var label = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일';
-  // 오늘 날짜 같은 거 있으면 덮어쓰기
-  var idx = saved.findIndex(function(s){return s.label===label;});
+  // 날짜+시간으로 항상 새로 저장
+  var label = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 '
+    +now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
   var entry = {label:label, ts:now.getTime(), ids:weekPlan.map(function(r){return r.id;})};
-  if(idx>=0) saved[idx] = entry;
-  else saved.unshift(entry);
+  saved.unshift(entry);
   setSaved(saved);
-  showToast('이번 주 식단이 저장됐어요!');
+  showToast('식단이 저장됐어요!');
 }
 
 function loadWeek(ids) {
@@ -508,7 +516,7 @@ function renderSaved() {
     el.innerHTML = '<div class="empty" style="margin-top:40px">저장된 식단이 없어요<br><span style="font-size:12px;margin-top:8px;display:block">주간 식단 탭에서 "이번 주 저장"을 눌러보세요</span></div>';
     return;
   }
-  var html = '<div class="slabel">저장된 식단</div>';
+  var html = '<div class="slabel">저장된 식단 ('+saved.length+'개)</div>';
   saved.forEach(function(s) {
     html += '<div class="saved-card">'
       +'<div class="saved-head">'
@@ -532,6 +540,64 @@ function renderSaved() {
     html += '</div></div>';
   });
   el.innerHTML = html;
+}
+
+// ── 레시피 전체 탭 ────────────────────────────────────────
+var selectedIngredient = null;
+
+var FILTER_CATS = {
+  '채소류': ['버섯','브로콜리','시금치','애호박','파프리카','당근','청경채','양배추','가지','콩나물','오이','연근','아욱','부추','열무','깻잎','숙주','참나물','감자','단호박','고구마','무','양파','미역'],
+  '단백질류': ['닭안심','닭가슴살','소고기','새우','연어','달걀','두부','순두부']
+};
+
+function renderRecipes() {
+  var el = document.getElementById('view-recipes');
+  var filtered = selectedIngredient
+    ? RECIPES.filter(function(r){
+        return r.ingredients.some(function(ing){return ing.indexOf(selectedIngredient)>=0;});
+      })
+    : RECIPES;
+
+  var filterHtml = '<div class="slabel">재료로 찾기</div>';
+
+  // 채소류
+  filterHtml += '<div style="font-size:11px;font-weight:700;color:#2d7a5a;margin-bottom:6px">🥦 채소류</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">';
+  FILTER_CATS['채소류'].forEach(function(ing) {
+    var active = selectedIngredient===ing;
+    filterHtml += '<button onclick="selectedIngredient=\''+ ing +'\';renderRecipes()" style="font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;border:none;cursor:pointer;transition:all .15s;'+(active?'background:#2d7a5a;color:#fff':'background:#e8f5ee;color:#2d7a5a')+'">'+ing+'</button>';
+  });
+  filterHtml += '</div>';
+
+  // 단백질류
+  filterHtml += '<div style="font-size:11px;font-weight:700;color:#5048b0;margin-bottom:6px">🥩 단백질류</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">';
+  FILTER_CATS['단백질류'].forEach(function(ing) {
+    var active = selectedIngredient===ing;
+    filterHtml += '<button onclick="selectedIngredient=\''+ ing +'\';renderRecipes()" style="font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;border:none;cursor:pointer;transition:all .15s;'+(active?'background:#5048b0;color:#fff':'background:#eeeffe;color:#5048b0')+'">'+ing+'</button>';
+  });
+  filterHtml += '</div>';
+
+  // 전체 버튼
+  filterHtml += '<button onclick="selectedIngredient=null;renderRecipes()" style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;border:none;cursor:pointer;margin-top:4px;margin-bottom:16px;'+(selectedIngredient===null?'background:#1a1a1a;color:#fff':'background:#f0f0f0;color:#666')+'">전체 보기</button>';
+
+  filterHtml += '<div class="slabel">레시피 '+filtered.length+'개</div>';
+
+  var listHtml = filtered.map(function(r) {
+    return '<div class="dcard" onclick="openModal('+r.id+')" style="cursor:pointer">'
+      +'<div style="display:flex;align-items:center;gap:12px;padding:12px 16px">'
+      +'<div class="ricon">'+getEmoji(r)+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="rname">'+r.name+'</div>'
+      +'<div class="rtags" style="margin-top:3px">'+r.tags.slice(0,2).map(function(t){return '<span class="rtag">'+t+'</span>';}).join('')+'</div>'
+      +'</div>'
+      +'<div style="color:#ccc;font-size:20px">›</div>'
+      +'</div>'
+      +'<div class="nutrow" style="padding-top:0">'+r.nutrition.map(function(n){return '<span class="nb '+getNClass(n)+'">'+n+'</span>';}).join('')+'</div>'
+      +'</div>';
+  }).join('');
+
+  el.innerHTML = filterHtml + listHtml;
 }
 
 function showToast(msg) {
